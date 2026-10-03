@@ -1,1 +1,363 @@
-aaa
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookify — Find and book your next stay</title>
+<meta name="description" content="Bookify: search hotels, compare rooms and book in minutes.">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="./"><span class="logo">◆</span> Bookify</a>
+    <nav class="nav" aria-label="Main">
+      <a href="#stays">Stays</a>
+      <button class="link-btn" id="navBookings" hidden type="button">My bookings</button>
+      <button class="link-btn" id="navProfile" hidden type="button">Profile</button>
+      <a href="admin.html" class="nav-admin">Admin</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn ghost" id="btnSignIn" type="button">Sign in</button>
+      <button class="btn primary" id="btnRegister" type="button">Create account</button>
+      <div class="user-chip" id="userChip" hidden>
+        <span id="userName"></span>
+        <button class="link-btn" id="btnSignOut" type="button">Sign out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="stays">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <p class="eyebrow">Bookify · 120+ destinations</p>
+    <h1>Find a room you’ll love.</h1>
+    <p class="lede">Search hotels, compare rooms and reserve in minutes. Checkout is a mock — no real payment is taken.</p>
+
+    <form class="search-bar" id="searchForm" novalidate>
+      <div class="field">
+        <label for="fDest">Destination</label>
+        <input id="fDest" name="destination" type="text" placeholder="City, country or hotel" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="fIn">Check-in</label>
+        <input id="fIn" name="check_in" type="date" required>
+      </div>
+      <div class="field">
+        <label for="fOut">Check-out</label>
+        <input id="fOut" name="check_out" type="date" required>
+      </div>
+      <div class="field small">
+        <label for="fGuests">Guests</label>
+        <select id="fGuests" name="guests">
+          <option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+        </select>
+      </div>
+      <div class="field small">
+        <label for="fRooms">Rooms</label>
+        <select id="fRooms" name="rooms">
+          <option selected>1</option><option>2</option><option>3</option><option>4</option>
+        </select>
+      </div>
+      <button class="btn primary lg" type="submit">Search</button>
+    </form>
+    <p class="form-error" id="searchError" role="alert" hidden></p>
+  </div>
+</section>
+
+<main id="main" class="wrap layout">
+  <aside class="filters" aria-label="Filters">
+    <h2>Filters</h2>
+    <fieldset>
+      <legend>Price per night</legend>
+      <div class="range">
+        <label class="sr" for="fMinP">Min price</label>
+        <input id="fMinP" type="number" min="0" step="10" placeholder="Min $">
+        <label class="sr" for="fMaxP">Max price</label>
+        <input id="fMaxP" type="number" min="0" step="10" placeholder="Max $">
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Star rating</legend>
+      <label><input type="radio" name="stars" value="" checked> Any</label>
+      <label><input type="radio" name="stars" value="3"> 3★ and up</label>
+      <label><input type="radio" name="stars" value="4"> 4★ and up</label>
+      <label><input type="radio" name="stars" value="5"> 5★</label>
+    </fieldset>
+    <fieldset id="amenityBox">
+      <legend>Amenities</legend>
+    </fieldset>
+    <label class="check"><input type="checkbox" id="fAvailable"> Available for my dates only</label>
+    <div class="filter-actions">
+      <button class="btn primary block" id="btnApply" type="button">Apply filters</button>
+      <button class="btn ghost block" id="btnReset" type="button">Reset</button>
+    </div>
+  </aside>
+
+  <section class="results" aria-live="polite">
+    <div class="results-head">
+      <h2 id="resultsTitle">Popular stays</h2>
+      <div class="sort">
+        <label for="fSort">Sort</label>
+        <select id="fSort">
+          <option value="rating">Top rated</option>
+          <option value="price_asc">Price: low → high</option>
+          <option value="price_desc">Price: high → low</option>
+          <option value="stars">Star rating</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="state" id="loading" hidden><span class="spinner" aria-hidden="true"></span> Searching stays…</div>
+    <div class="state" id="empty" hidden>
+      <p><strong>No stays match your search.</strong></p>
+      <p>Try widening your dates, price range or destination.</p>
+      <button class="btn ghost" id="btnClear" type="button">Clear filters</button>
+    </div>
+    <nav class="pager" id="pager" hidden aria-label="Pagination"></nav>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <p class="brand"><span class="logo">◆</span> Bookify</p>
+      <p class="muted">Demo hotel-booking portal. <strong>No real payment gateway is connected</strong> — all checkout flows are mock and no card data is stored.</p>
+    </div>
+    <div class="muted">
+      <p>Development admin: <code>admin / admin123</code> — change before production.</p>
+      <p>© <span id="year"></span> Bookify</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ AUTH MODAL ============ -->
+<div class="modal" id="mAuth" hidden role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="modal-card">
+    <button class="x" data-close type="button" aria-label="Close">×</button>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="signin" role="tab" type="button">Sign in</button>
+      <button class="tab" data-tab="register" role="tab" type="button">Create account</button>
+      <button class="tab" data-tab="verify" role="tab" type="button">Verify email</button>
+      <button class="tab" data-tab="forgot" role="tab" type="button">Forgot password</button>
+    </div>
+
+    <form id="formSignIn" class="pane" novalidate>
+      <div class="field"><label for="liId">Email or username</label>
+        <input id="liId" type="text" autocomplete="username" required></div>
+      <div class="field"><label for="liPw">Password</label>
+        <input id="liPw" type="password" autocomplete="current-password" required></div>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <button class="btn primary block" type="submit">Sign in</button>
+    </form>
+
+    <form id="formRegister" class="pane" novalidate hidden>
+      <div class="field"><label for="rgName">Full name</label><input id="rgName" type="text" autocomplete="name" required></div>
+      <div class="field"><label for="rgEmail">Email</label><input id="rgEmail" type="email" autocomplete="email" required></div>
+      <div class="field"><label for="rgPhone">Phone number</label><input id="rgPhone" type="tel" autocomplete="tel" placeholder="+1 416 555 0111" required></div>
+      <div class="field"><label for="rgPw">Password</label>
+        <input id="rgPw" type="password" autocomplete="new-password" required aria-describedby="pwHint">
+        <small id="pwHint">8+ characters, at least a letter and a number.</small></div>
+      <div class="field"><label for="rgPw2">Confirm password</label>
+        <input id="rgPw2" type="password" autocomplete="new-password" required></div>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <button class="btn primary block" type="submit">Create account</button>
+      <p class="muted small">Accounts must be verified by email before booking.</p>
+    </form>
+
+    <div id="paneVerify" class="pane" hidden>
+      <div class="field"><label for="vfToken">Verification token or link</label>
+        <input id="vfToken" type="text" placeholder="Paste the token from your email"></div>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <button class="btn primary block" id="btnVerify" type="button">Verify email</button>
+      <button class="btn ghost block" id="btnResend" type="button">Resend link</button>
+      <p class="muted small" id="devLinkBox" hidden></p>
+    </div>
+
+    <form id="formForgot" class="pane" novalidate hidden>
+      <div class="field"><label for="fgEmail">Account email</label><input id="fgEmail" type="email" required></div>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <button class="btn primary block" type="submit">Send reset link</button>
+      <div id="resetBox" hidden>
+        <hr>
+        <div class="field"><label for="rsToken">Reset token</label><input id="rsToken" type="text"></div>
+        <div class="field"><label for="rsPw">New password</label><input id="rsPw" type="password" required></div>
+        <div class="field"><label for="rsPw2">Confirm new password</label><input id="rsPw2" type="password" required></div>
+        <button class="btn primary block" id="btnResetPw" type="button">Set new password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ HOTEL MODAL ============ -->
+<div class="modal" id="mHotel" hidden role="dialog" aria-modal="true" aria-labelledby="hmName">
+  <div class="modal-card wide">
+    <button class="x" data-close type="button" aria-label="Close">×</button>
+    <div class="gallery">
+      <img id="hmImg" src="" alt="">
+      <div class="thumbs" id="hmThumbs"></div>
+    </div>
+    <div class="hm-head">
+      <div>
+        <p class="muted" id="hmLoc"></p>
+        <h2 id="hmName"></h2>
+        <p class="rating" id="hmRating"></p>
+      </div>
+      <div class="hm-price"><span id="hmFrom"></span><small>per night, from</small></div>
+    </div>
+    <p id="hmDesc" class="desc"></p>
+
+    <div class="two-col">
+      <div>
+        <h3>Amenities</h3>
+        <ul class="chips" id="hmAmen"></ul>
+        <h3>Policies</h3>
+        <dl class="policies" id="hmPolicies"></dl>
+      </div>
+      <div>
+        <h3>Room options</h3>
+        <div class="rooms" id="hmRooms"></div>
+        <h3>Reviews</h3>
+        <div class="state slim"><p><strong id="hmRevCount"></strong></p><p class="muted">Reviews are coming soon — this is a placeholder.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOOKING MODAL ============ -->
+<div class="modal" id="mBooking" hidden role="dialog" aria-modal="true" aria-labelledby="bkTitle">
+  <div class="modal-card wide">
+    <button class="x" data-close type="button" aria-label="Close">×</button>
+    <h2 id="bkTitle">Complete your booking</h2>
+    <ol class="steps" id="bkSteps">
+      <li data-s="1" class="on">1 · Dates &amp; guests</li>
+      <li data-s="2">2 · Guest details</li>
+      <li data-s="3">3 · Payment</li>
+      <li data-s="4">4 · Confirmation</li>
+    </ol>
+
+    <div class="pane" data-pane="1">
+      <div class="grid2">
+        <div class="field"><label for="bkIn">Check-in</label><input id="bkIn" type="date" required></div>
+        <div class="field"><label for="bkOut">Check-out</label><input id="bkOut" type="date" required></div>
+        <div class="field"><label for="bkRooms">Rooms</label><input id="bkRooms" type="number" min="1" max="10" value="1"></div>
+        <div class="field"><label for="bkGuests">Guests</label><input id="bkGuests" type="number" min="1" max="12" value="2"></div>
+      </div>
+      <p class="muted" id="bkRoomInfo"></p>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions"><button class="btn primary" id="bkNext1" type="button">Continue</button></div>
+    </div>
+
+    <form class="pane" data-pane="2" id="bkForm2" novalidate hidden>
+      <div class="grid2">
+        <div class="field"><label for="bkName">Guest full name</label><input id="bkName" type="text" required></div>
+        <div class="field"><label for="bkEmail">Email</label><input id="bkEmail" type="email" required></div>
+        <div class="field"><label for="bkPhone">Phone</label><input id="bkPhone" type="tel" required></div>
+        <div class="field"><label for="bkNotes">Special requests (optional)</label><input id="bkNotes" type="text" maxlength="500"></div>
+      </div>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn ghost" id="bkBack2" type="button">Back</button>
+        <button class="btn primary" type="submit">Review &amp; pay</button>
+      </div>
+    </form>
+
+    <div class="pane" data-pane="3" hidden>
+      <div class="notice warn">
+        <strong>Demo checkout.</strong> No real payment gateway is connected. Card fields below are disabled
+        placeholders — nothing is transmitted or stored.
+      </div>
+      <div class="summary" id="bkSummary"></div>
+
+      <fieldset class="pay">
+        <legend>Payment method</legend>
+        <label class="pay-opt"><input type="radio" name="pay" value="card" checked>
+          <span><strong>Credit / debit card</strong><small>Visa, Mastercard — mock only</small></span></label>
+        <label class="pay-opt"><input type="radio" name="pay" value="paypal">
+          <span><strong>PayPal</strong><small>Mock redirect, no charge</small></span></label>
+        <label class="pay-opt"><input type="radio" name="pay" value="property">
+          <span><strong>Pay at property</strong><small>Pay when you arrive</small></span></label>
+      </fieldset>
+
+      <div class="card-demo" id="cardDemo">
+        <div class="grid2">
+          <div class="field"><label for="cdNum">Card number</label><input id="cdNum" type="text" value="4242 4242 4242 4242" disabled></div>
+          <div class="field"><label for="cdName">Name on card</label><input id="cdName" type="text" value="DEMO ONLY" disabled></div>
+          <div class="field"><label for="cdExp">Expiry</label><input id="cdExp" type="text" value="12/30" disabled></div>
+          <div class="field"><label for="cdCvv">CVC</label><input id="cdCvv" type="text" value="123" disabled></div>
+        </div>
+      </div>
+
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn ghost" id="bkBack3" type="button">Back</button>
+        <button class="btn primary" id="bkConfirm" type="button">Confirm booking</button>
+      </div>
+    </div>
+
+    <div class="pane center" data-pane="4" hidden>
+      <div class="success-icon" aria-hidden="true">✓</div>
+      <h3>Booking confirmed</h3>
+      <p>Your booking reference is <strong class="ref" id="bkRef"></strong></p>
+      <div class="summary" id="bkDone"></div>
+      <div class="actions">
+        <button class="btn ghost" data-close type="button">Close</button>
+        <button class="btn primary" id="bkViewMine" type="button">View my bookings</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD MODAL ============ -->
+<div class="modal" id="mDash" hidden role="dialog" aria-modal="true" aria-labelledby="dbTitle">
+  <div class="modal-card wide">
+    <button class="x" data-close type="button" aria-label="Close">×</button>
+    <h2 id="dbTitle">My account</h2>
+    <div class="notice info" id="verifyBanner" hidden>
+      Your email is not verified — <strong>you cannot book until it is.</strong>
+      <button class="link-btn" id="bannerResend" type="button">Resend link</button>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="profile" type="button">Profile</button>
+      <button class="tab" data-tab="security" type="button">Password</button>
+      <button class="tab" data-tab="bookings" type="button">Bookings</button>
+    </div>
+
+    <form id="formProfile" class="pane" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="pfName">Full name</label><input id="pfName" type="text" required></div>
+        <div class="field"><label for="pfPhone">Phone</label><input id="pfPhone" type="tel" required></div>
+        <div class="field"><label for="pfCountry">Country</label><input id="pfCountry" type="text"></div>
+        <div class="field"><label for="pfCity">City</label><input id="pfCity" type="text"></div>
+        <div class="field"><label for="pfDob">Date of birth</label><input id="pfDob" type="date"></div>
+        <div class="field"><label for="pfAddr">Address</label><input id="pfAddr" type="text"></div>
+        <div class="field span2"><label for="pfPrefs">Preferences (optional)</label>
+          <input id="pfPrefs" type="text" maxlength="500" placeholder="High floor, quiet room, late check-out…"></div>
+      </div>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions"><button class="btn primary" type="submit">Save profile</button></div>
+    </form>
+
+    <form id="formPassword" class="pane" novalidate hidden>
+      <div class="field"><label for="pwCur">Current password</label><input id="pwCur" type="password" required></div>
+      <div class="field"><label for="pwNew">New password</label><input id="pwNew" type="password" required></div>
+      <div class="field"><label for="pwCfm">Confirm new password</label><input id="pwCfm" type="password" required></div>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions"><button class="btn primary" type="submit">Change password</button></div>
+    </form>
+
+    <div class="pane" id="paneBookings" hidden>
+      <div class="state slim" id="bkLoading" hidden><span class="spinner"></span> Loading…</div>
+      <div id="myBookings"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>
