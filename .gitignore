@@ -1,4 +1,5 @@
-.sass-cache/
-*.css.map
-*.sass.map
-*.scss.map
+config.php
+database/*.sqlite
+database/*.sqlite-journal
+storage/
+.DS_Store
