@@ -1,1 +1,235 @@
-sssss
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookify Admin</title>
+<link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="loginView" class="login-wrap">
+  <form class="login-card" id="formAdminLogin" novalidate>
+    <p class="brand"><span class="logo">◆</span> Bookify</p>
+    <h1>Admin sign in</h1>
+    <p class="muted small">Development credentials: <code>admin / admin123</code> — change before production.</p>
+    <div class="field"><label for="adId">Username or email</label><input id="adId" autocomplete="username" required></div>
+    <div class="field"><label for="adPw">Password</label><input id="adPw" type="password" autocomplete="current-password" required></div>
+    <p class="form-error" data-err role="alert" hidden></p>
+    <button class="btn primary block" type="submit">Sign in</button>
+    <p class="muted small center"><a href="index.html">← Back to booking site</a></p>
+  </form>
+</section>
+
+<!-- APP -->
+<div id="appView" hidden>
+  <div class="shell">
+    <aside class="side">
+      <p class="brand"><span class="logo">◆</span> Bookify</p>
+      <nav id="sideNav" aria-label="Admin sections"></nav>
+      <div class="side-foot">
+        <span id="who"></span>
+        <button class="link-btn" id="btnAdminOut" type="button">Sign out</button>
+        <a href="index.html" class="link-btn">Customer site</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- Dashboard -->
+      <section class="view" data-view="dashboard">
+        <h1>Dashboard</h1>
+        <div class="metrics" id="metrics"></div>
+        <h2>Recent bookings</h2>
+        <div class="table-wrap"><table id="recentTable">
+          <thead><tr><th>Reference</th><th>Customer</th><th>Hotel</th><th>Dates</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody></tbody></table></div>
+      </section>
+
+      <!-- Hotels -->
+      <section class="view" data-view="hotels" hidden>
+        <header class="view-head"><h1>Hotels</h1>
+          <button class="btn primary" id="btnNewHotel" data-perm="hotels.create">+ New hotel</button></header>
+        <div class="table-wrap"><table id="hotelTable">
+          <thead><tr><th>Hotel</th><th>City</th><th>Stars</th><th>Rooms</th><th>From</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody></table></div>
+      </section>
+
+      <!-- Bookings -->
+      <section class="view" data-view="bookings" hidden>
+        <header class="view-head"><h1>Bookings</h1>
+          <div class="row-tools">
+            <label for="bkFilter" class="sr">Status</label>
+            <select id="bkFilter">
+              <option value="">All statuses</option><option>pending</option><option>confirmed</option>
+              <option>completed</option><option>cancelled</option><option>rejected</option>
+            </select>
+          </div></header>
+        <div class="table-wrap"><table id="bookingTable">
+          <thead><tr><th>Reference</th><th>Customer</th><th>Hotel / room</th><th>Stay</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead>
+          <tbody></tbody></table></div>
+      </section>
+
+      <!-- Customers -->
+      <section class="view" data-view="users" hidden>
+        <header class="view-head"><h1>Customers</h1>
+          <div class="row-tools">
+            <input id="uSearch" type="search" placeholder="Search name, email, phone">
+            <label for="uFilter" class="sr">Status</label>
+            <select id="uFilter"><option value="">All</option><option>pending</option><option>active</option><option>blocked</option></select>
+            <button class="btn primary" id="btnNewUser" data-perm="users.create">+ New customer</button>
+          </div></header>
+        <div class="table-wrap"><table id="userTable">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Verified</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody></tbody></table></div>
+      </section>
+
+      <!-- Staff -->
+      <section class="view" data-view="staff" hidden>
+        <header class="view-head"><h1>Staff accounts</h1>
+          <button class="btn primary" id="btnNewStaff" data-perm="admins.create">+ New staff</button></header>
+        <div class="table-wrap"><table id="staffTable">
+          <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Roles</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody></table></div>
+        <h2>Roles</h2>
+        <div class="table-wrap"><table id="roleTable">
+          <thead><tr><th>Role</th><th>Description</th><th>Users</th><th>Permissions</th><th>Actions</th></tr></thead>
+          <tbody></tbody></table></div>
+      </section>
+
+      <!-- Audit -->
+      <section class="view" data-view="audit" hidden>
+        <header class="view-head"><h1>Audit log</h1><span class="muted" id="auditCount"></span></header>
+        <div class="table-wrap"><table id="auditTable">
+          <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th><th>IP</th></tr></thead>
+          <tbody></tbody></table></div>
+        <div class="pager" id="auditPager"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- HOTEL EDITOR -->
+<div class="modal" id="mHotelEdit" hidden role="dialog" aria-modal="true" aria-labelledby="heTitle">
+  <div class="modal-card wide">
+    <button class="x" data-close type="button" aria-label="Close">×</button>
+    <h2 id="heTitle">Edit hotel</h2>
+    <form id="formHotel" novalidate>
+      <input type="hidden" id="heId">
+      <div class="grid2">
+        <div class="field span2"><label for="heName">Hotel name</label><input id="heName" required></div>
+        <div class="field"><label for="heCity">City</label><input id="heCity" required></div>
+        <div class="field"><label for="heCountry">Country</label><input id="heCountry" required></div>
+        <div class="field span2"><label for="heAddr">Address</label><input id="heAddr"></div>
+        <div class="field"><label for="heStars">Star rating (1–5)</label><input id="heStars" type="number" min="1" max="5" value="3"></div>
+        <div class="field"><label for="heRating">Guest rating (0–5)</label><input id="heRating" type="number" min="0" max="5" step="0.1" value="4.5"></div>
+        <div class="field span2"><label for="heLoc">Map / location text</label><input id="heLoc" placeholder="Central location, 5 min walk to…"></div>
+        <div class="field span2"><label for="heDesc">Description</label><textarea id="heDesc" rows="3" required></textarea></div>
+        <div class="field span2"><label for="heAmen">Amenities (one per line)</label><textarea id="heAmen" rows="3"></textarea></div>
+        <div class="field span2"><label for="heImages">Image URLs or paths (one per line)</label><textarea id="heImages" rows="2"></textarea></div>
+        <div class="field"><label for="heStatus">Status</label>
+          <select id="heStatus"><option value="draft">Draft</option><option value="published">Published</option></select></div>
+        <div class="field"><label for="heCin">Check-in time</label><input id="heCin" value="15:00"></div>
+        <div class="field"><label for="heCout">Check-out time</label><input id="heCout" value="11:00"></div>
+        <div class="field"><label for="heCancel">Cancellation policy</label><input id="heCancel" value="Free cancellation until 48 hours before check-in."></div>
+      </div>
+
+      <h3>Room types &amp; inventory</h3>
+      <div id="roomRows"></div>
+      <button class="btn ghost" id="btnAddRoom" type="button">+ Add room type</button>
+
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn ghost" data-close type="button">Cancel</button>
+        <button class="btn primary" type="submit">Save hotel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- STAFF EDITOR -->
+<div class="modal" id="mStaffEdit" hidden role="dialog" aria-modal="true" aria-labelledby="seTitle">
+  <div class="modal-card wide">
+    <button class="x" data-close type="button" aria-label="Close">×</button>
+    <h2 id="seTitle">Edit staff</h2>
+    <form id="formStaff" novalidate>
+      <input type="hidden" id="seId">
+      <div class="grid2">
+        <div class="field"><label for="seName">Full name</label><input id="seName" required></div>
+        <div class="field"><label for="seUser">Username</label><input id="seUser" required></div>
+        <div class="field"><label for="seEmail">Email</label><input id="seEmail" type="email" required></div>
+        <div class="field"><label for="sePhone">Phone</label><input id="sePhone"></div>
+        <div class="field"><label for="sePw">Password <span class="muted">(leave blank to keep)</span></label>
+          <input id="sePw" type="password" autocomplete="new-password"></div>
+        <div class="field"><label for="seStatus">Status</label>
+          <select id="seStatus"><option>active</option><option>pending</option><option>blocked</option></select></div>
+      </div>
+      <fieldset class="perm-box"><legend>Roles</legend><div id="seRoles"></div></fieldset>
+      <fieldset class="perm-box"><legend>Extra permissions (on top of roles)</legend><div id="sePerms"></div></fieldset>
+      <p class="muted small">You can only grant roles and permissions you hold yourself.</p>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn ghost" data-close type="button">Cancel</button>
+        <button class="btn primary" type="submit">Save staff</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ROLE EDITOR -->
+<div class="modal" id="mRoleEdit" hidden role="dialog" aria-modal="true" aria-labelledby="reTitle">
+  <div class="modal-card">
+    <button class="x" data-close type="button" aria-label="Close">×</button>
+    <h2 id="reTitle">Edit role</h2>
+    <form id="formRole" novalidate>
+      <input type="hidden" id="reId">
+      <div class="field"><label for="reName">Role name (lowercase_snake)</label><input id="reName" required></div>
+      <div class="field"><label for="reDesc">Description</label><input id="reDesc"></div>
+      <fieldset class="perm-box"><legend>Permissions</legend><div id="rePerms"></div></fieldset>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn ghost" data-close type="button">Cancel</button>
+        <button class="btn primary" type="submit">Save role</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- USER EDITOR -->
+<div class="modal" id="mUserEdit" hidden role="dialog" aria-modal="true" aria-labelledby="ueTitle">
+  <div class="modal-card">
+    <button class="x" data-close type="button" aria-label="Close">×</button>
+    <h2 id="ueTitle">Customer</h2>
+    <form id="formUser" novalidate>
+      <input type="hidden" id="ueId">
+      <div class="field"><label for="ueName">Full name</label><input id="ueName" required></div>
+      <div class="field"><label for="ueEmail">Email</label><input id="ueEmail" type="email" required></div>
+      <div class="field"><label for="uePhone">Phone</label><input id="uePhone"></div>
+      <div class="field" id="uePwWrap"><label for="uePw">Temporary password</label><input id="uePw" type="password"></div>
+      <div class="field"><label for="ueStatus">Status</label>
+        <select id="ueStatus"><option>active</option><option>pending</option><option>blocked</option></select></div>
+      <p class="form-error" data-err role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn ghost" data-close type="button">Cancel</button>
+        <button class="btn primary" type="submit">Save customer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="modal" id="mConfirm" hidden role="alertdialog" aria-modal="true" aria-labelledby="cfTitle">
+  <div class="modal-card">
+    <h2 id="cfTitle">Are you sure?</h2>
+    <p id="cfMsg">This action cannot be undone.</p>
+    <div class="actions">
+      <button class="btn ghost" id="cfNo" type="button">Cancel</button>
+      <button class="btn danger" id="cfYes" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>
